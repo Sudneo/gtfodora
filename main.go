@@ -1,17 +1,26 @@
 package main
 
 import (
-	cloner "github.com/sudneo/gtfodora/pkg/repo_utils"
+	"encoding/json"
+	"fmt"
+
+	"github.com/sudneo/gtfodora/pkg/gtfobins"
 )
 
-const (
-	gtfo_repo   string = "https://github.com/GTFOBins/GTFOBins.github.io"
-	lolbas_repo string = "https://github.com/LOLBAS-Project/LOLBAS"
-)
+func prettyPrint(i interface{}) string {
+	s, _ := json.MarshalIndent(i, "", "\t")
+	return string(s)
+}
 
 func main() {
 	gtfo_location := "/tmp/gtfo"
-	lolbas_location := "/tmp/lolbas"
-	cloner.Clone_repo(gtfo_repo, gtfo_location)
-	cloner.Clone_repo(lolbas_repo, lolbas_location)
+	gtfobins.Clone(gtfo_location)
+	gtfoInfo := gtfobins.ParseAll(gtfo_location)
+	for _, file := range gtfoInfo {
+		if file.Data.Functions.SUID != nil {
+			// fmt.Println(prettyPrint(file))
+			fmt.Println(file.Binary)
+		}
+
+	}
 }
