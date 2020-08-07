@@ -23,30 +23,30 @@ type FileInfo struct {
 
 type GTFObin struct {
 	Functions struct {
-		Shell                      []Spec `yaml:"shell"`
-		FileUpload                 []Spec `yaml:"file-upload"`
-		FileDownload               []Spec `yaml:"file-download"`
-		FileWrite                  []Spec `yaml:"file-write"`
-		FileRead                   []Spec `yaml:"file-read"`
-		LibraryLoad                []Spec `yaml:"library-load"`
-		Sudo                       []Spec `yaml:"sudo"`
-		NonInteractiveReverseShell []Spec `yaml:"non-interactive-reverse-shell"`
-		Command                    []Spec `yaml:"command"`
-		BindShell                  []Spec `yaml:"bind-shell"`
-		SUID                       []Spec `yaml:"suid"`
-		LimitedSUID                []Spec `yaml:"limited-suid"`
-		ReverseShell               []Spec `yaml:"reverse-shell"`
-		NonInteractiveBindShell    []Spec `yaml:"non-interactive-bind-shell"`
-		Capabilities               []Spec `yaml:"capabilities"`
+		Shell                      []spec `yaml:"shell"`
+		FileUpload                 []spec `yaml:"file-upload"`
+		FileDownload               []spec `yaml:"file-download"`
+		FileWrite                  []spec `yaml:"file-write"`
+		FileRead                   []spec `yaml:"file-read"`
+		LibraryLoad                []spec `yaml:"library-load"`
+		Sudo                       []spec `yaml:"sudo"`
+		NonInteractiveReverseShell []spec `yaml:"non-interactive-reverse-shell"`
+		Command                    []spec `yaml:"command"`
+		BindShell                  []spec `yaml:"bind-shell"`
+		SUID                       []spec `yaml:"suid"`
+		LimitedSUID                []spec `yaml:"limited-suid"`
+		ReverseShell               []spec `yaml:"reverse-shell"`
+		NonInteractiveBindShell    []spec `yaml:"non-interactive-bind-shell"`
+		Capabilities               []spec `yaml:"capabilities"`
 	} `yaml:"functions"`
 }
 
-type Spec struct {
+type spec struct {
 	Code        string `yaml:"code"`
 	Description string `yaml:"description"`
 }
 
-func Clone(destination string) {
+func CloneGTFO(destination string) {
 	cloner.Clone_repo(repoURL, destination)
 }
 
@@ -63,21 +63,22 @@ func ParseAll(path string) []FileInfo {
 		panic(err)
 	}
 	for _, file := range files {
-		binaryName := strings.TrimSuffix(filepath.Base(file), filepath.Ext(file))
-		f := FileInfo{file, Parse(file), binaryName}
-		parsedFiles = append(parsedFiles, f)
+		if info, err := os.Stat(file); err == nil && !info.IsDir() {
+			binaryName := strings.TrimSuffix(filepath.Base(file), filepath.Ext(file))
+			f := FileInfo{file, parse(file), binaryName}
+			parsedFiles = append(parsedFiles, f)
+		}
 	}
 	return parsedFiles
 }
 
-func Pull(path string) {
+func pull(path string) {
 	cloner.Pull_repo(path)
 }
 
-func Parse(filePath string) GTFObin {
+func parse(filePath string) GTFObin {
 
 	yamlFile, err := ioutil.ReadFile(filePath)
-	fmt.Println(string(yamlFile))
 	if err != nil {
 		fmt.Println("Error")
 		fmt.Println(err.Error())
