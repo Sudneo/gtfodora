@@ -14,6 +14,15 @@ func prettyPrint(i interface{}) string {
 	return string(s)
 }
 
+func stringInSlice(a string, list []string) bool {
+	for _, b := range list {
+		if b == a {
+			return true
+		}
+	}
+	return false
+}
+
 func test() {
 
 	gtfo_location := "./gtfo"
@@ -37,11 +46,20 @@ func test() {
 
 }
 func listAll(gtfobins []gtfobins.FileInfo, lolbas []lolbas.LOLbasbin) {
+	fmt.Println(" >>> Unix binaries:")
 	for _, file := range gtfobins {
-		fmt.Printf("Unix: %v\n", file.Binary)
+		if len(file.Binary) > 0 {
+			fmt.Printf("%v\n", file.Binary)
+		}
+		if file.Binary == ".dir-locals" {
+			fmt.Println(file)
+		}
 	}
+	fmt.Println("\n >>> Windows binaries:")
 	for _, file := range lolbas {
-		fmt.Printf("Windows: %v\n", file.Name)
+		if len(file.Name) > 0 {
+			fmt.Printf("%v\n", file.Name)
+		}
 	}
 }
 
@@ -61,8 +79,27 @@ func search(bin string, gtfobins []gtfobins.FileInfo, lolbas []lolbas.LOLbasbin)
 	fmt.Printf("No results for binary %v\n", bin)
 }
 
+func listFunctions(lolbas []lolbas.LOLbasbin) []string {
+	var functions []string
+	if lolbas != nil {
+		for _, bin := range lolbas {
+			for _, command := range bin.Commands {
+				if !stringInSlice(command.Category, functions) && len(command.Category) > 0 {
+					functions = append(functions, command.Category)
+				}
+			}
+		}
+	}
+	var unixFunctions = [...]string{"FileUpload", "FileDownload", "FileWrite", "FileRead", "LibraryLoad", "Sudo", "NonInteractiveReverseShell", "Command", "BindShell", "SUID", "LimitedSUID", "ReverseShell", "NonInteractiveBindShell", "Capabilities"}
+
+	for _, f := range unixFunctions {
+		functions = append(functions, f)
+	}
+	return functions
+}
+
 func main() {
-	var functions = [...]string{"download", "upload", "execute"}
+	// var functions = [...]string{"download", "upload", "execute"}
 	listFunctionsPtr := flag.Bool("list-functions", false, "List the functions for the binaries")
 	// unixFilterPtr := flag.Bool("unix", false, "Filter the search among only unix binaries (i.e., gtfobin)")
 	// winFilterPtr := flag.Bool("win", false, "Filter the search among only windows binaries (i.e, lolbas)")
@@ -71,12 +108,6 @@ func main() {
 	cloneDirPtr := flag.String("clone-path", ".", "The path in which to clone the gtfobin and lolbas repos, defaults to \".\"")
 	searchBinPtr := flag.String("s", "", "Search for the binary specified and prints its details")
 	flag.Parse()
-	if *listFunctionsPtr {
-		for _, f := range functions {
-			fmt.Println(f)
-		}
-		return
-	}
 	if *functionPtr != "" {
 		fmt.Printf("Will search for %v\n", *functionPtr)
 	}
@@ -86,6 +117,14 @@ func main() {
 	lolbas.CloneLOLbas(lolbas_location)
 	lolbasbin_list := lolbas.ParseAll(lolbas_location)
 	gtfobin_list := gtfobins.ParseAll(gtfo_location)
+	if *listFunctionsPtr {
+		functions := listFunctions(lolbasbin_list)
+		fmt.Println("Functions available:")
+		for _, f := range functions {
+			fmt.Println(f)
+		}
+		return
+	}
 	if *listAllPtr {
 		listAll(gtfobin_list, lolbasbin_list)
 	} else if len(*searchBinPtr) > 0 {

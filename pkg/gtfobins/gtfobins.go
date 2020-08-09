@@ -63,7 +63,7 @@ func ParseAll(path string) []FileInfo {
 		panic(err)
 	}
 	for _, file := range files {
-		if info, err := os.Stat(file); err == nil && !info.IsDir() {
+		if info, err := os.Stat(file); err == nil && !info.IsDir() && filepath.Base(file) != ".dir-locals.el" {
 			binaryName := strings.TrimSuffix(filepath.Base(file), filepath.Ext(file))
 			f := FileInfo{file, parse(file), binaryName}
 			parsedFiles = append(parsedFiles, f)
