@@ -31,17 +31,13 @@ func listAll(unix bool, win bool, gtfo_list []gtfobins.FileInfo, lolbas_list []l
 	if unix {
 		fmt.Println(">>> Unix binaries:")
 		for _, file := range gtfo_list {
-			if len(file.Binary) > 0 {
-				fmt.Printf("%v\n", file.Binary)
-			}
+			fmt.Println(file.Binary)
 		}
 	}
 	if win {
 		fmt.Println("\n>>> Windows binaries:")
 		for _, file := range lolbas_list {
-			if len(file.Name) > 0 {
-				fmt.Printf("%v\n", file.Name)
-			}
+			fmt.Println(file.Name)
 		}
 	}
 }
@@ -66,55 +62,68 @@ func searchFunction(unix bool, win bool, gtfo_list []gtfobins.FileInfo, lolbas_l
 	return append(unixBinaries, winBinaries...)
 }
 
-func search(bin string, unix bool, win bool, function string, gtfo_list []gtfobins.FileInfo, lolbas_list []lolbas.LOLbasbin) {
-	if unix {
-		for _, file := range gtfo_list {
-			if file.Binary == bin {
-				if function != "" {
-					if file.GTFOHasFunction(function) {
-						fmt.Printf("The binary %v allows to perform function %v.\n", file.Binary, function)
-						details := file.GTFOGetFunctionDetails(function)
-						if len(details[0].Description) > 0 {
-							fmt.Printf("Description:\n %v\n", details[0].Description)
-						}
-						if len(details[0].Code) > 0 {
-							fmt.Printf("Code:\n %s\n", details[0].Code)
-						}
-						return
-					} else {
-						fmt.Printf("The binary %v does not allow to perform function %v.\n", file.Binary, function)
-						return
+func unixSearch(bin string, function string, gtfo_list []gtfobins.FileInfo) bool {
+	for _, file := range gtfo_list {
+		if file.Binary == bin {
+			if function != "" {
+				if file.GTFOHasFunction(function) {
+					fmt.Printf("The binary %v allows to perform function %v.\n", file.Binary, function)
+					details := file.GTFOGetFunctionDetails(function)
+					if len(details[0].Description) > 0 {
+						fmt.Printf("Description:\n %v\n", details[0].Description)
 					}
+					if len(details[0].Code) > 0 {
+						fmt.Printf("Code:\n %s\n", details[0].Code)
+					}
+					return true
+				} else {
+					fmt.Printf("The binary %v does not allow to perform function %v.\n", file.Binary, function)
+					return false
 				}
-				file.GTFOPrettyPrint()
-				return
 			}
+			file.GTFOPrettyPrint()
+			return true
 		}
 	}
-	if win {
-		for _, file := range lolbas_list {
-			if file.Name == bin {
-				if function != "" {
-					if file.LOLbasHasFunction(function) {
-						fmt.Printf("The binary %v allows to perform function %v.\n", file.Name, function)
-						details := file.LOLbasGetFunctionDetails(function)
-						if len(details.Description) > 0 {
-							fmt.Printf("Description:\n %v\n", details.Description)
-						}
-						if len(details.Code) > 0 {
-							fmt.Printf("Code:\n %s\n", details.Code)
-						}
-						return
-					} else {
-						fmt.Printf("The binary %v does not allow to perform function %v.\n", file.Name, function)
-						return
-					}
-				}
-				fmt.Println(prettyPrint(file))
-				return
+	return false
+}
 
+func winSearch(bin string, function string, lolbas_list []lolbas.LOLbasbin) bool {
+	for _, file := range lolbas_list {
+		if file.Name == bin {
+			if function != "" {
+				if file.LOLbasHasFunction(function) {
+					fmt.Printf("The binary %v allows to perform function %v.\n", file.Name, function)
+					details := file.LOLbasGetFunctionDetails(function)
+					if len(details.Description) > 0 {
+						fmt.Printf("Description:\n %v\n", details.Description)
+					}
+					if len(details.Code) > 0 {
+						fmt.Printf("Code:\n %s\n", details.Code)
+					}
+					return true
+				} else {
+					fmt.Printf("The binary %v does not allow to perform function %v.\n", file.Name, function)
+					return false
+				}
 			}
+			file.LOLbasPrettyPrint()
+			return true
 		}
+	}
+	return false
+}
+
+func search(bin string, unix bool, win bool, function string, gtfo_list []gtfobins.FileInfo, lolbas_list []lolbas.LOLbasbin) {
+	var unixFound bool
+	if unix {
+		unixFound = unixSearch(bin, function, gtfo_list)
+	}
+	var winFound bool
+	if win {
+		winFound = winSearch(bin, function, lolbas_list)
+	}
+	if !unixFound && !winFound {
 		fmt.Printf("No results for binary %v\n", bin)
 	}
 }

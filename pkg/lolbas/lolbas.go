@@ -113,3 +113,20 @@ func (f *LOLbasbin) LOLbasGetFunctionDetails(a string) Spec {
 	}
 	return Spec{"", ""}
 }
+
+func (f *LOLbasbin) LOLbasPrettyPrint() {
+	fmt.Printf("Information about: %v\n", f.Name)
+	for _, cmd := range f.Commands {
+		fmt.Printf("--------------------------------\n")
+		fmt.Printf("%v:\n", cmd.Category)
+		if len(cmd.Description) > 0 {
+			fmt.Printf("- Description:\n")
+			fmt.Printf("%v\n", cmd.Description)
+		}
+		if len(cmd.Command) > 0 {
+			fmt.Printf("- Code:\n")
+			fmt.Printf("%s\n", cmd.Command)
+		}
+	}
+
+}
