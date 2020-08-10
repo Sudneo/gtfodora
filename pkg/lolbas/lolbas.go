@@ -47,6 +47,11 @@ type LOLbasbin struct {
 	} `yaml:"Acknowledgement"`
 }
 
+type Spec struct {
+	Description string
+	Code        string
+}
+
 func CloneLOLbas(path string) {
 	cloner.Clone_repo(repoURL, path)
 }
@@ -88,4 +93,23 @@ func ParseAll(path string) []LOLbasbin {
 		}
 	}
 	return parsedFiles
+}
+
+func (f *LOLbasbin) LOLbasHasFunction(a string) bool {
+	for _, cmd := range f.Commands {
+		if cmd.Category == a {
+			return true
+		}
+	}
+	return false
+}
+
+func (f *LOLbasbin) LOLbasGetFunctionDetails(a string) Spec {
+	for _, cmd := range f.Commands {
+		if cmd.Category == a {
+			result := Spec{cmd.Description, cmd.Command}
+			return result
+		}
+	}
+	return Spec{"", ""}
 }
