@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"flag"
 	"fmt"
 
@@ -12,11 +11,6 @@ import (
 // Global Variables
 var unixFunctions = []string{"Shell", "FileUpload", "FileDownload", "FileWrite", "FileRead", "LibraryLoad", "Sudo", "NonInteractiveReverseShell", "Command", "BindShell", "SUID", "LimitedSUID", "ReverseShell", "NonInteractiveBindShell", "Capabilities"}
 var winFunctions = []string{"Execute", "AWL Bypass", "ADS", "Download", "Copy", "Encode", "Decode", "Credentials", "AwL bypass", "Compile", "AWL bypass", "Dump", "UAC bypass", "Reconnaissance"}
-
-func prettyPrint(i interface{}) string {
-	s, _ := json.MarshalIndent(i, "", "\t")
-	return string(s)
-}
 
 func stringInSlice(a string, list []string) bool {
 	for _, b := range list {
@@ -70,10 +64,10 @@ func unixSearch(bin string, function string, gtfo_list []gtfobins.FileInfo) bool
 					fmt.Printf("The binary %v allows to perform function %v.\n", file.Binary, function)
 					details := file.GTFOGetFunctionDetails(function)
 					if len(details[0].Description) > 0 {
-						fmt.Printf("Description:\n %v\n", details[0].Description)
+						fmt.Printf("Description:\n\n%v\n", details[0].Description)
 					}
 					if len(details[0].Code) > 0 {
-						fmt.Printf("Code:\n %s\n", details[0].Code)
+						fmt.Printf("Code:\n\n%s\n", details[0].Code)
 					}
 					return true
 				} else {
@@ -96,10 +90,10 @@ func winSearch(bin string, function string, lolbas_list []lolbas.LOLbasbin) bool
 					fmt.Printf("The binary %v allows to perform function %v.\n", file.Name, function)
 					details := file.LOLbasGetFunctionDetails(function)
 					if len(details.Description) > 0 {
-						fmt.Printf("Description:\n %v\n", details.Description)
+						fmt.Printf("Description:\n\n%v\n", details.Description)
 					}
 					if len(details.Code) > 0 {
-						fmt.Printf("Code:\n %s\n", details.Code)
+						fmt.Printf("Code:\n\n%s\n", details.Code)
 					}
 					return true
 				} else {
