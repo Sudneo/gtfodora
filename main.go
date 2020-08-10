@@ -134,7 +134,7 @@ func listFunctions(unix bool, win bool) []string {
 }
 
 func main() {
-	cloneDirPtr := flag.String("clone-path", ".", "The path in which to clone the gtfobin and lolbas repos, defaults to \".\"")
+	cloneDirPtr := flag.String("clone-path", "/tmp", "The path in which to clone the gtfobin and lolbas repos, defaults to \".\"")
 	listFunctionsPtr := flag.Bool("list-functions", false, "List the functions for the binaries")
 	listAllPtr := flag.Bool("list-all", false, "List all the binaries in the collection")
 	unixFilterPtr := flag.Bool("unix", false, "Filter the search among only unix binaries (i.e., gtfobin)")
