@@ -34,6 +34,8 @@ The `-list-all` and `-list-functions` print, respectively, all the binaries (bot
 The `-unix` and `-win` switches can be used together with all the other commands and will filter the results for GTFObins or LOLbas only, respectively.
 The `-s` and `-f` can be used to search for specific binaries (-s), binaries that allow a certain function (-f) or to get the information on how a function is performed by a specific binary (combined).
 
+At every execution the binary is run will try to clone and pull the repositories, so that the information is up-to-date.
+
 ## Examples
 
 List all the functions for GTFObins:
