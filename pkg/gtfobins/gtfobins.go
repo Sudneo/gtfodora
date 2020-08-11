@@ -46,6 +46,20 @@ type Spec struct {
 	Description string `yaml:"description"`
 }
 
+func (s *Spec) SpecPrint() {
+	if len(s.Description) > 0 {
+		fmt.Printf("- Description:\n")
+		fmt.Printf("%v\n", s.Description)
+	}
+	if len(s.Code) > 0 {
+		fmt.Printf("- Code:\n")
+		fmt.Printf("%s\n", s.Code)
+	}
+	if len(s.Code) > 0 || len(s.Description) > 0 {
+		fmt.Printf("\n")
+	}
+}
+
 func CloneGTFO(destination string) {
 	cloner.Clone_repo(repoURL, destination)
 }
@@ -161,183 +175,113 @@ func (f *FileInfo) GTFOPrettyPrint() {
 	if f.Data.Functions.Shell != nil {
 		fmt.Printf("--------------------------------\n")
 		fmt.Printf("Shell:\n")
-		spec := f.Data.Functions.Shell
-		if len(spec[0].Description) > 0 {
-			fmt.Printf("- Description:\n")
-			fmt.Printf("%v\n", spec[0].Description)
-		}
-		if len(spec[0].Code) > 0 {
-			fmt.Printf("- Code:\n")
-			fmt.Printf("%s\n", spec[0].Code)
+		specs := f.Data.Functions.Shell
+		for _, spec := range specs {
+			spec.SpecPrint()
 		}
 	}
 	if f.Data.Functions.FileUpload != nil {
 		fmt.Printf("--------------------------------\n")
 		fmt.Printf("File Upload:\n")
-		spec := f.Data.Functions.FileUpload
-		if len(spec[0].Description) > 0 {
-			fmt.Printf("- Description:\n")
-			fmt.Printf("%v\n", spec[0].Description)
-		}
-		if len(spec[0].Code) > 0 {
-			fmt.Printf("- Code:\n")
-			fmt.Printf("%s\n", spec[0].Code)
+		specs := f.Data.Functions.FileUpload
+		for _, spec := range specs {
+			spec.SpecPrint()
 		}
 	}
 	if f.Data.Functions.FileDownload != nil {
 		fmt.Printf("--------------------------------\n")
 		fmt.Printf("File Download:\n")
-		spec := f.Data.Functions.FileDownload
-		if len(spec[0].Description) > 0 {
-			fmt.Printf("- Description:\n")
-			fmt.Printf("%v\n", spec[0].Description)
-		}
-		if len(spec[0].Code) > 0 {
-			fmt.Printf("- Code:\n")
-			fmt.Printf("%s\n", spec[0].Code)
+		specs := f.Data.Functions.FileDownload
+		for _, spec := range specs {
+			spec.SpecPrint()
 		}
 	}
 	if f.Data.Functions.FileWrite != nil {
 		fmt.Printf("--------------------------------\n")
 		fmt.Printf("File Write:\n")
-		spec := f.Data.Functions.FileWrite
-		if len(spec[0].Description) > 0 {
-			fmt.Printf("- Description:\n")
-			fmt.Printf("%v\n", spec[0].Description)
-		}
-		if len(spec[0].Code) > 0 {
-			fmt.Printf("- Code:\n")
-			fmt.Printf("%s\n", spec[0].Code)
+		specs := f.Data.Functions.FileWrite
+		for _, spec := range specs {
+			spec.SpecPrint()
 		}
 	}
 	if f.Data.Functions.LibraryLoad != nil {
 		fmt.Printf("--------------------------------\n")
 		fmt.Printf("Library Load:\n")
-		spec := f.Data.Functions.LibraryLoad
-		if len(spec[0].Description) > 0 {
-			fmt.Printf("- Description:\n")
-			fmt.Printf("%v\n", spec[0].Description)
-		}
-		if len(spec[0].Code) > 0 {
-			fmt.Printf("- Code:\n")
-			fmt.Printf("%s\n", spec[0].Code)
+		specs := f.Data.Functions.LibraryLoad
+		for _, spec := range specs {
+			spec.SpecPrint()
 		}
 	}
 	if f.Data.Functions.Sudo != nil {
 		fmt.Printf("--------------------------------\n")
 		fmt.Printf("Sudo:\n")
-		spec := f.Data.Functions.Sudo
-		if len(spec[0].Description) > 0 {
-			fmt.Printf("- Description:\n")
-			fmt.Printf("%v\n", spec[0].Description)
-		}
-		if len(spec[0].Code) > 0 {
-			fmt.Printf("- Code:\n")
-			fmt.Printf("%s\n", spec[0].Code)
+		specs := f.Data.Functions.Sudo
+		for _, spec := range specs {
+			spec.SpecPrint()
 		}
 	}
 	if f.Data.Functions.NonInteractiveReverseShell != nil {
 		fmt.Printf("--------------------------------\n")
 		fmt.Printf("Non Interactive Reverse Shell:\n")
-		spec := f.Data.Functions.NonInteractiveReverseShell
-		if len(spec[0].Description) > 0 {
-			fmt.Printf("- Description:\n")
-			fmt.Printf("%v\n", spec[0].Description)
-		}
-		if len(spec[0].Code) > 0 {
-			fmt.Printf("- Code:\n")
-			fmt.Printf("%s\n", spec[0].Code)
+		specs := f.Data.Functions.NonInteractiveReverseShell
+		for _, spec := range specs {
+			spec.SpecPrint()
 		}
 	}
 	if f.Data.Functions.Command != nil {
 		fmt.Printf("--------------------------------\n")
 		fmt.Printf("Command:\n")
-		spec := f.Data.Functions.Command
-		if len(spec[0].Description) > 0 {
-			fmt.Printf("- Description:\n")
-			fmt.Printf("%v\n", spec[0].Description)
-		}
-		if len(spec[0].Code) > 0 {
-			fmt.Printf("- Code:\n")
-			fmt.Printf("%s\n", spec[0].Code)
+		specs := f.Data.Functions.Command
+		for _, spec := range specs {
+			spec.SpecPrint()
 		}
 	}
 	if f.Data.Functions.BindShell != nil {
 		fmt.Printf("--------------------------------\n")
 		fmt.Printf("Bind Shell:\n")
-		spec := f.Data.Functions.BindShell
-		if len(spec[0].Description) > 0 {
-			fmt.Printf("- Description:\n")
-			fmt.Printf("%v\n", spec[0].Description)
-		}
-		if len(spec[0].Code) > 0 {
-			fmt.Printf("- Code:\n")
-			fmt.Printf("%s\n", spec[0].Code)
+		specs := f.Data.Functions.BindShell
+		for _, spec := range specs {
+			spec.SpecPrint()
 		}
 	}
 	if f.Data.Functions.SUID != nil {
 		fmt.Printf("--------------------------------\n")
 		fmt.Printf("SUID:\n")
-		spec := f.Data.Functions.SUID
-		if len(spec[0].Description) > 0 {
-			fmt.Printf("- Description:\n")
-			fmt.Printf("%v\n", spec[0].Description)
-		}
-		if len(spec[0].Code) > 0 {
-			fmt.Printf("- Code:\n")
-			fmt.Printf("%s\n", spec[0].Code)
+		specs := f.Data.Functions.SUID
+		for _, spec := range specs {
+			spec.SpecPrint()
 		}
 	}
 	if f.Data.Functions.LimitedSUID != nil {
 		fmt.Printf("--------------------------------\n")
 		fmt.Printf("Limited SUID:\n")
-		spec := f.Data.Functions.LimitedSUID
-		if len(spec[0].Description) > 0 {
-			fmt.Printf("- Description:\n")
-			fmt.Printf("%v\n", spec[0].Description)
-		}
-		if len(spec[0].Code) > 0 {
-			fmt.Printf("- Code:\n")
-			fmt.Printf("%s\n", spec[0].Code)
+		specs := f.Data.Functions.LimitedSUID
+		for _, spec := range specs {
+			spec.SpecPrint()
 		}
 	}
 	if f.Data.Functions.ReverseShell != nil {
 		fmt.Printf("--------------------------------\n")
 		fmt.Printf("Reverse Shell:\n")
-		spec := f.Data.Functions.ReverseShell
-		if len(spec[0].Description) > 0 {
-			fmt.Printf("- Description:\n")
-			fmt.Printf("%v\n", spec[0].Description)
-		}
-		if len(spec[0].Code) > 0 {
-			fmt.Printf("- Code:\n")
-			fmt.Printf("%s\n", spec[0].Code)
+		specs := f.Data.Functions.ReverseShell
+		for _, spec := range specs {
+			spec.SpecPrint()
 		}
 	}
 	if f.Data.Functions.NonInteractiveBindShell != nil {
 		fmt.Printf("--------------------------------\n")
 		fmt.Printf("Non Interactive Bind Shell:\n")
-		spec := f.Data.Functions.NonInteractiveBindShell
-		if len(spec[0].Description) > 0 {
-			fmt.Printf("- Description:\n")
-			fmt.Printf("%v\n", spec[0].Description)
-		}
-		if len(spec[0].Code) > 0 {
-			fmt.Printf("- Code:\n")
-			fmt.Printf("%s\n", spec[0].Code)
+		specs := f.Data.Functions.NonInteractiveBindShell
+		for _, spec := range specs {
+			spec.SpecPrint()
 		}
 	}
 	if f.Data.Functions.Capabilities != nil {
 		fmt.Printf("--------------------------------\n")
 		fmt.Printf("Capabilities:\n")
-		spec := f.Data.Functions.Capabilities
-		if len(spec[0].Description) > 0 {
-			fmt.Printf("- Description:\n")
-			fmt.Printf("%v\n", spec[0].Description)
-		}
-		if len(spec[0].Code) > 0 {
-			fmt.Printf("- Code:\n")
-			fmt.Printf("%s\n", spec[0].Code)
+		specs := f.Data.Functions.Capabilities
+		for _, spec := range specs {
+			spec.SpecPrint()
 		}
 	}
 }

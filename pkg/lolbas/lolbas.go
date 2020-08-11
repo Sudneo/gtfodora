@@ -127,6 +127,9 @@ func (f *LOLbasbin) LOLbasPrettyPrint() {
 			fmt.Printf("- Code:\n")
 			fmt.Printf("%s\n", cmd.Command)
 		}
+		if len(cmd.Description) > 0 || len(cmd.Command) > 0 {
+			fmt.Printf("\n")
+		}
 	}
 
 }

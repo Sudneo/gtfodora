@@ -61,17 +61,14 @@ func unixSearch(bin string, function string, gtfo_list []gtfobins.FileInfo) bool
 		if file.Binary == bin {
 			if function != "" {
 				if file.GTFOHasFunction(function) {
-					fmt.Printf("The binary %v allows to perform function %v.\n", file.Binary, function)
+					fmt.Printf("%v allows to perform function %v.\n", file.Binary, function)
 					details := file.GTFOGetFunctionDetails(function)
-					if len(details[0].Description) > 0 {
-						fmt.Printf("Description:\n\n%v\n", details[0].Description)
-					}
-					if len(details[0].Code) > 0 {
-						fmt.Printf("Code:\n\n%s\n", details[0].Code)
+					for _, detail := range details {
+						detail.SpecPrint()
 					}
 					return true
 				} else {
-					fmt.Printf("The binary %v does not allow to perform function %v.\n", file.Binary, function)
+					fmt.Printf("%v does not allow to perform function %v.\n", file.Binary, function)
 					return false
 				}
 			}
@@ -169,7 +166,7 @@ func main() {
 	}
 	if *functionPtr != "" {
 		if !stringInSlice(*functionPtr, unixFunctions) && !stringInSlice(*functionPtr, winFunctions) {
-			fmt.Println("The function selected does not exist.\nYou can check the existing functions by using the -list-functions switch.")
+			fmt.Printf("The function \"%v\" does not exist.\nYou can check the existing functions by using the -list-functions switch.\n", *functionPtr)
 			return
 		}
 		if *searchBinPtr == "" {
