@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	log "github.com/sirupsen/logrus"
 	cloner "github.com/sudneo/gtfodora/pkg/repo_utils"
 	"gopkg.in/yaml.v2"
 )
@@ -61,9 +62,18 @@ func (s *Spec) SpecPrint() {
 }
 
 func CloneGTFO(destination string) {
-	cloner.Clone_repo(repoURL, destination)
+	err := cloner.Clone_repo(repoURL, destination)
+	if err != nil {
+		log.Warn("Cloning GTFObins failed, the results will be partial")
+	}
 }
 
+func pull(path string) {
+	err := cloner.Pull_repo(path)
+	if err != nil {
+		log.Warn("Failed to pull GTFObins repo, the results might be outdated.")
+	}
+}
 func ParseAll(path string) []FileInfo {
 	cloner.Pull_repo(path)
 	binary_path := path + "/_gtfobins/"
@@ -86,16 +96,13 @@ func ParseAll(path string) []FileInfo {
 	return parsedFiles
 }
 
-func pull(path string) {
-	cloner.Pull_repo(path)
-}
-
 func parse(filePath string) GTFObin {
-
 	yamlFile, err := ioutil.ReadFile(filePath)
 	if err != nil {
-		fmt.Println("Error")
-		fmt.Println(err.Error())
+		log.WithFields(log.Fields{
+			"File":  filePath,
+			"Error": err.Error(),
+		}).Error("Failed to parse file")
 	}
 	var bin GTFObin
 	err = yaml.Unmarshal(yamlFile, &bin)
