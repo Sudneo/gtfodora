@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	log "github.com/sirupsen/logrus"
+	binary "github.com/sudneo/gtfodora/pkg/binary"
 	cloner "github.com/sudneo/gtfodora/pkg/repo_utils"
 	"gopkg.in/yaml.v2"
 )
@@ -74,11 +75,11 @@ func pull(path string) {
 		log.Warn("Failed to pull GTFObins repo, the results might be outdated.")
 	}
 }
-func ParseAll(path string) []FileInfo {
+func ParseAll(path string) []binary.Binary {
 	cloner.Pull_repo(path)
 	binary_path := path + "/_gtfobins/"
 	var files []string
-	var parsedFiles []FileInfo
+	var parsedFiles []binary.Binary
 	err := filepath.Walk(binary_path, func(path string, info os.FileInfo, err error) error {
 		files = append(files, path)
 		return nil
@@ -90,10 +91,168 @@ func ParseAll(path string) []FileInfo {
 		if info, err := os.Stat(file); err == nil && !info.IsDir() && filepath.Base(file) != ".dir-locals.el" {
 			binaryName := strings.TrimSuffix(filepath.Base(file), filepath.Ext(file))
 			f := FileInfo{file, parse(file), binaryName}
-			parsedFiles = append(parsedFiles, f)
+			b := transform(f)
+			parsedFiles = append(parsedFiles, b)
 		}
 	}
 	return parsedFiles
+}
+
+func transform(f FileInfo) binary.Binary {
+	var bin binary.Binary
+	bin.Name = f.Binary
+	bin.Path = f.Filename
+	if f.Data.Functions.Shell != nil {
+		var cmd binary.Command
+		cmd.Function = "shell"
+		for _, spec := range f.Data.Functions.Shell {
+			cmd.Details = append(cmd.Details, binary.FunctionSpec{
+				Description: spec.Description,
+				Code:        spec.Code})
+		}
+		bin.Commands = append(bin.Commands, cmd)
+	}
+	if f.Data.Functions.FileUpload != nil {
+		var cmd binary.Command
+		cmd.Function = "upload"
+		for _, spec := range f.Data.Functions.FileUpload {
+			cmd.Details = append(cmd.Details, binary.FunctionSpec{
+				Description: spec.Description,
+				Code:        spec.Code})
+		}
+		bin.Commands = append(bin.Commands, cmd)
+	}
+	if f.Data.Functions.FileDownload != nil {
+		var cmd binary.Command
+		cmd.Function = "download"
+		for _, spec := range f.Data.Functions.FileDownload {
+			cmd.Details = append(cmd.Details, binary.FunctionSpec{
+				Description: spec.Description,
+				Code:        spec.Code})
+		}
+		bin.Commands = append(bin.Commands, cmd)
+	}
+	if f.Data.Functions.FileWrite != nil {
+		var cmd binary.Command
+		cmd.Function = "filewrite"
+		for _, spec := range f.Data.Functions.FileWrite {
+			cmd.Details = append(cmd.Details, binary.FunctionSpec{
+				Description: spec.Description,
+				Code:        spec.Code})
+		}
+		bin.Commands = append(bin.Commands, cmd)
+	}
+	if f.Data.Functions.FileRead != nil {
+		var cmd binary.Command
+		cmd.Function = "fileread"
+		for _, spec := range f.Data.Functions.FileRead {
+			cmd.Details = append(cmd.Details, binary.FunctionSpec{
+				Description: spec.Description,
+				Code:        spec.Code})
+		}
+		bin.Commands = append(bin.Commands, cmd)
+	}
+	if f.Data.Functions.LibraryLoad != nil {
+		var cmd binary.Command
+		cmd.Function = "libraryload"
+		for _, spec := range f.Data.Functions.LibraryLoad {
+			cmd.Details = append(cmd.Details, binary.FunctionSpec{
+				Description: spec.Description,
+				Code:        spec.Code})
+		}
+		bin.Commands = append(bin.Commands, cmd)
+	}
+	if f.Data.Functions.Sudo != nil {
+		var cmd binary.Command
+		cmd.Function = "sudo"
+		for _, spec := range f.Data.Functions.Sudo {
+			cmd.Details = append(cmd.Details, binary.FunctionSpec{
+				Description: spec.Description,
+				Code:        spec.Code})
+		}
+		bin.Commands = append(bin.Commands, cmd)
+	}
+	if f.Data.Functions.NonInteractiveReverseShell != nil {
+		var cmd binary.Command
+		cmd.Function = "noninteractiverevshell"
+		for _, spec := range f.Data.Functions.NonInteractiveReverseShell {
+			cmd.Details = append(cmd.Details, binary.FunctionSpec{
+				Description: spec.Description,
+				Code:        spec.Code})
+		}
+		bin.Commands = append(bin.Commands, cmd)
+	}
+	if f.Data.Functions.Command != nil {
+		var cmd binary.Command
+		cmd.Function = "command"
+		for _, spec := range f.Data.Functions.Command {
+			cmd.Details = append(cmd.Details, binary.FunctionSpec{
+				Description: spec.Description,
+				Code:        spec.Code})
+		}
+		bin.Commands = append(bin.Commands, cmd)
+	}
+	if f.Data.Functions.BindShell != nil {
+		var cmd binary.Command
+		cmd.Function = "bindshell"
+		for _, spec := range f.Data.Functions.BindShell {
+			cmd.Details = append(cmd.Details, binary.FunctionSpec{
+				Description: spec.Description,
+				Code:        spec.Code})
+		}
+		bin.Commands = append(bin.Commands, cmd)
+	}
+	if f.Data.Functions.SUID != nil {
+		var cmd binary.Command
+		cmd.Function = "suid"
+		for _, spec := range f.Data.Functions.SUID {
+			cmd.Details = append(cmd.Details, binary.FunctionSpec{
+				Description: spec.Description,
+				Code:        spec.Code})
+		}
+		bin.Commands = append(bin.Commands, cmd)
+	}
+	if f.Data.Functions.LimitedSUID != nil {
+		var cmd binary.Command
+		cmd.Function = "limitedsuid"
+		for _, spec := range f.Data.Functions.LimitedSUID {
+			cmd.Details = append(cmd.Details, binary.FunctionSpec{
+				Description: spec.Description,
+				Code:        spec.Code})
+		}
+		bin.Commands = append(bin.Commands, cmd)
+	}
+	if f.Data.Functions.ReverseShell != nil {
+		var cmd binary.Command
+		cmd.Function = "revshell"
+		for _, spec := range f.Data.Functions.ReverseShell {
+			cmd.Details = append(cmd.Details, binary.FunctionSpec{
+				Description: spec.Description,
+				Code:        spec.Code})
+		}
+		bin.Commands = append(bin.Commands, cmd)
+	}
+	if f.Data.Functions.NonInteractiveBindShell != nil {
+		var cmd binary.Command
+		cmd.Function = "noninteractivebindshell"
+		for _, spec := range f.Data.Functions.NonInteractiveBindShell {
+			cmd.Details = append(cmd.Details, binary.FunctionSpec{
+				Description: spec.Description,
+				Code:        spec.Code})
+		}
+		bin.Commands = append(bin.Commands, cmd)
+	}
+	if f.Data.Functions.Capabilities != nil {
+		var cmd binary.Command
+		cmd.Function = "capabilities"
+		for _, spec := range f.Data.Functions.Capabilities {
+			cmd.Details = append(cmd.Details, binary.FunctionSpec{
+				Description: spec.Description,
+				Code:        spec.Code})
+		}
+		bin.Commands = append(bin.Commands, cmd)
+	}
+	return bin
 }
 
 func parse(filePath string) GTFObin {
