@@ -4,15 +4,17 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/sudneo/gtfodora/pkg/binary"
 	"github.com/sudneo/gtfodora/pkg/gtfobins"
 	"github.com/sudneo/gtfodora/pkg/lolbas"
 )
 
 // Global Variables
-var unixFunctions = []string{"Shell", "FileUpload", "FileDownload", "FileWrite", "FileRead", "LibraryLoad", "Sudo", "NonInteractiveReverseShell", "Command", "BindShell", "SUID", "LimitedSUID", "ReverseShell", "NonInteractiveBindShell", "Capabilities"}
-var winFunctions = []string{"Execute", "AWL Bypass", "ADS", "Download", "Copy", "Encode", "Decode", "Credentials", "AwL bypass", "Compile", "AWL bypass", "Dump", "UAC bypass", "Reconnaissance"}
+var unixFunctions = []string{"shell", "upload", "download", "filewrite", "fileread", "libraryload", "sudo", "noninteractiverevshell", "command", "bindshell", "suid", "limitedsuid", "revshell", "noninteractivebindshell", "capabilities"}
+var winFunctions = []string{"command", "awlbypass", "ADS", "download", "copy", "encode", "decode", "credentials", "compile", "dump", "uacbypass", "reconnaissance"}
 
 func init() {
 	log.SetFormatter(&log.TextFormatter{
@@ -32,83 +34,57 @@ func stringInSlice(a string, list []string) bool {
 	return false
 }
 
-func listAll(unix bool, win bool, gtfo_list []gtfobins.FileInfo, lolbas_list []lolbas.LOLbasbin) {
-	if unix {
-		fmt.Println(">>> Unix binaries:")
-		for _, file := range gtfo_list {
-			fmt.Println(file.Binary)
+func removeDuplicateValues(s []string) []string {
+	keys := make(map[string]bool)
+	list := []string{}
+	for _, entry := range s {
+		if _, value := keys[entry]; !value {
+			keys[entry] = true
+			list = append(list, entry)
 		}
 	}
-	if win {
-		fmt.Println(">>> Windows binaries:")
-		for _, file := range lolbas_list {
-			if file.Name != "" {
-				fmt.Println(file.Name)
-			}
+	return list
+}
+
+func listAll(b_list []binary.Binary) {
+	fmt.Println(">>> Unix binaries:")
+	for _, file := range b_list {
+		if file.Type == "unix" {
+			fmt.Println(file.Name)
+		}
+	}
+	fmt.Println(">>> Windows binaries:")
+	for _, file := range b_list {
+		if file.Type == "win" {
+			fmt.Println(file.Name)
 		}
 	}
 }
 
-func searchFunction(unix bool, win bool, gtfo_list []gtfobins.FileInfo, lolbas_list []lolbas.LOLbasbin, function string) []string {
-	var unixBinaries []string
-	if unix {
-		for _, file := range gtfo_list {
-			if file.GTFOHasFunction(function) {
-				unixBinaries = append(unixBinaries, file.Binary)
-			}
+func searchFunction(b_list []binary.Binary, function string) []string {
+	var binaries []string
+	for _, file := range b_list {
+		if has, _ := file.HasFunction(function); has {
+			binaries = append(binaries, file.Name)
 		}
 	}
-	var winBinaries []string
-	if win {
-		for _, file := range lolbas_list {
-			if file.LOLbasHasFunction(function) {
-				winBinaries = append(winBinaries, file.Name)
-			}
-		}
-	}
-	return append(unixBinaries, winBinaries...)
+	return binaries
 }
 
-func unixSearch(bin string, function string, gtfo_list []gtfobins.FileInfo) bool {
-	for _, file := range gtfo_list {
-		if file.Binary == bin {
-			if function != "" {
-				if file.GTFOHasFunction(function) {
-					log.WithFields(log.Fields{
-						"Function": function,
-						"Binary":   file.Binary,
-					}).Info("The function is supported by the binary")
-					details := file.GTFOGetFunctionDetails(function)
-					for _, detail := range details {
-						detail.SpecPrint()
-					}
-					return true
-				} else {
-					log.WithFields(log.Fields{
-						"Binary":   file.Binary,
-						"Function": function,
-					}).Errorf("%q does not allow to perform function %q.\n", file.Binary, function)
-					return false
-				}
-			}
-			file.GTFOPrettyPrint()
-			return true
-		}
-	}
-	return false
-}
-
-func winSearch(bin string, function string, lolbas_list []lolbas.LOLbasbin) bool {
-	for _, file := range lolbas_list {
+func binSearch(bin string, function string, b_list []binary.Binary) bool {
+	for _, file := range b_list {
 		if file.Name == bin {
 			if function != "" {
-				if file.LOLbasHasFunction(function) {
+				if has, details := file.HasFunction(function); has {
 					log.WithFields(log.Fields{
 						"Function": function,
 						"Binary":   file.Name,
 					}).Info("The function is supported by the binary")
-					c := file.LOLbasGetFunctionDetails(function)
-					c.CmdPrettyPrint()
+					fmt.Printf("[+] %v:\n", function)
+					fmt.Println(strings.Repeat("-", len(function)+5))
+					for _, detail := range details {
+						detail.Print()
+					}
 					return true
 				} else {
 					log.WithFields(log.Fields{
@@ -118,26 +94,22 @@ func winSearch(bin string, function string, lolbas_list []lolbas.LOLbasbin) bool
 					return false
 				}
 			}
-			file.LOLbasPrettyPrint()
+			file.Print()
 			return true
 		}
 	}
 	return false
 }
 
-func search(bin string, unix bool, win bool, function string, gtfo_list []gtfobins.FileInfo, lolbas_list []lolbas.LOLbasbin) {
-	var unixFound bool
-	if unix {
-		unixFound = unixSearch(bin, function, gtfo_list)
-	}
-	var winFound bool
-	if win {
-		winFound = winSearch(bin, function, lolbas_list)
-	}
-	if !unixFound && !winFound {
+func search(bin string, function string, b_list []binary.Binary) {
+	found := binSearch(bin, function, b_list)
+	if !found {
 		log.WithFields(log.Fields{
 			"Binary": bin,
 		}).Error("No results for the specified binary")
+		log.WithFields(log.Fields{
+			"Details": b_list,
+		}).Debug("Details")
 	}
 }
 
@@ -149,6 +121,7 @@ func listFunctions(unix bool, win bool) {
 	if win {
 		result = append(result, winFunctions...)
 	}
+	result = removeDuplicateValues(result)
 	fmt.Println("Functions available:")
 	for _, f := range result {
 		fmt.Printf("\t%v\n", f)
@@ -157,18 +130,13 @@ func listFunctions(unix bool, win bool) {
 
 func validateFunction(a string) bool {
 	if !stringInSlice(a, unixFunctions) && !stringInSlice(a, winFunctions) {
-		log.WithFields(log.Fields{
-			"Function":            a,
-			"Available Functions": append(unixFunctions, winFunctions...),
-		}).Error("The function selected is not available.")
 		return false
 	}
 	return true
 }
 
 func main() {
-	// Command Line flags
-	cloneDirPtr := flag.String("clone-path", "/tmp", "The path in which to clone the gtfobin and lolbas repos, defaults to \".\"")
+	cloneDirPtr := flag.String("clone-path", "/tmp", "The path in which to clone the gtfobin and lolbas repos, defaults to \"/tmp.\"")
 	listFunctionsPtr := flag.Bool("list-functions", false, "List the functions for the binaries")
 	listAllPtr := flag.Bool("list-all", false, "List all the binaries in the collection")
 	unixFilterPtr := flag.Bool("unix", false, "Filter the search among only unix binaries (i.e., gtfobin)")
@@ -177,43 +145,42 @@ func main() {
 	searchBinPtr := flag.String("s", "", "Search for the binary specified and prints its details")
 	verbosePtr := flag.Bool("v", false, "Set loglevel to DEBUG")
 	flag.Parse()
-
 	if *verbosePtr {
 		log.SetLevel(log.DebugLevel)
 	}
-	if *functionPtr != "" {
-		valid := validateFunction(*functionPtr)
-		if !valid {
-			return
-		}
-	}
-	gtfo_location := fmt.Sprintf("%v/gtfo", *cloneDirPtr)
-	gtfobins.CloneGTFO(gtfo_location)
-	lolbas_location := fmt.Sprintf("%v/lolbas", *cloneDirPtr)
-	lolbas.CloneLOLbas(lolbas_location)
-
-	lolbas_list := lolbas.ParseAll(lolbas_location)
-	gtfo_list := gtfobins.ParseAll(gtfo_location)
-
-	if len(lolbas_list) == 0 || len(gtfo_list) == 0 {
-		log.Error("Error encountered getting information about binaries. Aborting")
-		return
-	}
 	win := *winFilterPtr || (!*unixFilterPtr && !*winFilterPtr)
 	unix := *unixFilterPtr || (!*unixFilterPtr && !*winFilterPtr)
+	var binary_list []binary.Binary
+	if win {
+		lolbas_location := fmt.Sprintf("%v/lolbas", *cloneDirPtr)
+		lolbas.Clone(lolbas_location)
+		binary_list = append(binary_list, lolbas.ParseAll(lolbas_location)...)
+	}
+	if unix {
+		gtfo_location := fmt.Sprintf("%v/gtfo", *cloneDirPtr)
+		gtfobins.Clone(gtfo_location)
+		binary_list = append(binary_list, gtfobins.ParseAll(gtfo_location)...)
+	}
+	if len(binary_list) == 0 {
+		log.Fatal("Error encountered getting information about binaries. Aborting")
+	}
 	// Processing of commandLine Args
-	if *listFunctionsPtr {
+	switch {
+	case *listFunctionsPtr:
 		listFunctions(unix, win)
-		return
-	}
-	if *listAllPtr {
-		listAll(unix, win, gtfo_list, lolbas_list)
-		return
-	}
-	if *functionPtr != "" {
+	case *listAllPtr:
+		listAll(binary_list)
+	case *functionPtr != "":
+		valid := validateFunction(*functionPtr)
+		if !valid {
+			log.WithFields(log.Fields{
+				"Function":            *functionPtr,
+				"Available Functions": append(unixFunctions, winFunctions...),
+			}).Error("The function selected is not available.")
+			return
+		}
 		if *searchBinPtr == "" {
-			// We just want to list the binaries that have a certain function
-			bin_list := searchFunction(unix, win, gtfo_list, lolbas_list, *functionPtr)
+			bin_list := searchFunction(binary_list, *functionPtr)
 			if len(bin_list) > 0 {
 				fmt.Printf("List of all the binaries with function %v:\n", *functionPtr)
 				for _, s := range bin_list {
@@ -224,15 +191,12 @@ func main() {
 					"Function": *functionPtr,
 				}).Error("No binary found with the specified function")
 			}
-			return
 		} else {
-			// We want to check if a certain binary has a certain function
-			search(*searchBinPtr, unix, win, *functionPtr, gtfo_list, lolbas_list)
-			return
+			search(*searchBinPtr, *functionPtr, binary_list)
 		}
-	} else if *searchBinPtr != "" {
-		// Just search the binary and print its information
-		search(*searchBinPtr, unix, win, "", gtfo_list, lolbas_list)
-		return
+	case *searchBinPtr != "":
+		search(*searchBinPtr, "", binary_list)
+	default:
+		log.Error("No necessary flags were specified")
 	}
 }
