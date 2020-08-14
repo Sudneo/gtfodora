@@ -89,20 +89,34 @@ func (l *lolbasbin) transform() binary.Binary {
 	bin.Type = "win"
 	for _, c := range l.Commands {
 		var cmd binary.Command
-		switch strings.ToLower(c.Category) {
-		case "execute":
-			cmd.Function = "command"
-		case "awl Bypass":
-			cmd.Function = "awlbypass"
-		case "uac bypass":
-			cmd.Function = "uacbypass"
-		default:
-			cmd.Function = strings.ToLower(c.Category)
+		// Check current bin commands to see if there is already one with same
+		// category and in case append to it
+		existing := false
+		for i, _ := range bin.Commands {
+			if bin.Commands[i].Function == strings.ToLower(c.Category) {
+				det := bin.Commands[i].Details
+				bin.Commands[i].Details = append(det, binary.FunctionSpec{
+					Description: c.Description,
+					Code:        c.Command})
+				existing = true
+			}
 		}
-		cmd.Details = append(cmd.Details, binary.FunctionSpec{
-			Description: c.Description,
-			Code:        c.Command})
-		bin.Commands = append(bin.Commands, cmd)
+		if !existing {
+			switch strings.ToLower(c.Category) {
+			case "execute":
+				cmd.Function = "command"
+			case "awl Bypass":
+				cmd.Function = "awlbypass"
+			case "uac bypass":
+				cmd.Function = "uacbypass"
+			default:
+				cmd.Function = strings.ToLower(c.Category)
+			}
+			cmd.Details = append(cmd.Details, binary.FunctionSpec{
+				Description: c.Description,
+				Code:        c.Command})
+			bin.Commands = append(bin.Commands, cmd)
+		}
 	}
 	return bin
 
