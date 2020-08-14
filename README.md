@@ -168,8 +168,6 @@ Download and save 7zip to disk in the current folder.
 - Code:
 certutil.exe -urlcache -split -f http://7-zip.org/a/7z1604-x64.exe 7zip.exe
 
-[+] download:
--------------
 - Description:
 Download and save 7zip to disk in the current folder.
 - Code:
@@ -196,5 +194,5 @@ Command to decode a Base64 encoded file.
 - Code:
 certutil -decode encodedInputFileName decodedOutputFileName
 
-./gtfodora -s Certutil.exe  0,10s user 0,03s system 13% cpu 0,975 total
+./gtfodora -s Certutil.exe  0,10s user 0,01s system 11% cpu 0,930 total
 ```
